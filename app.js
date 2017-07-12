@@ -1,7 +1,8 @@
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const parseurl = require('parseurl');
-const Customer = require('./models/customer');
+const Customers = require('./models/customers');
+const Vendors = require('./models/vendors');
 const express = require('express');
 mongoose.Promise = require('bluebird');
 
@@ -22,13 +23,13 @@ const app = express();
 
 //GET /api/customer/items - get a list of items
 app.get("/api/customer/items", function(req, res){
-  Customer.find({}).then(function(vending) {
+  Customers.find({}).then(function(vending) {
   res.json(vending);
 });
 });
 
 //POST /api/customer/items/:itemId/purchases - purchase an item using money
-app.post("/api/customer/items/:id/purchases", function(req,res) {
+app.post("/api/customer/items/snickers/purchases", function(req,res) {
     // const newVendor = new Vendor(req.body).save().then(function () {
      res.json({});
    });
