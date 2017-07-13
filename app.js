@@ -17,14 +17,14 @@ const app = express();
 //endpoints
 
  app.get("/api/sanity", function(req, res) {
-   res.json({});
+   res.json({status: "success", data:{}});
  });
 
 
 //GET /api/customer/items - get a list of items
 app.get("/api/customer/items", function(req, res){
   Customers.find({}).then(function(vending) {
-  res.json(vending);
+  res.json({status: "success", data: vending});
 });
 });
 
@@ -36,23 +36,25 @@ app.post("/api/customer/items/snickers/purchases", function(req,res) {
   Customers.findOne({type: 'snickers'}).then(function(item){
     if (!item){
       msg = 'we do not carry that item';
-      return res.status(404).json({});
+      return res.status(404).json({status: "fail", message: msg, data:{item: item}});
     } else {
     console.log('HERE',item);
     var totalCostAmount = numberPurchased * item.price;
     console.log("TOTALCOST ", totalCostAmount);
     var paidAmount = 200;
     var changeDue = paidAmount - totalCostAmount;
-console.log("CHANGE", changeDue);
+    console.log("CHANGE", changeDue);
     item.quantity -= numberPurchased;
     item.save().then(function(newItem){
       const vendor = new Vendors({type: newItem.type, quantity: numberPurchased, totalCost: totalCostAmount}).save().then(function(){
         //function on customer input of money
         if (changeDue > 0) {
-          return ('Your change is ' + changeDue);
+          var msg = 'Your change is ' + changeDue;
+          return res.json({status: "success", message: msg, data: {paidAmount: paidAmount, totalCostAmount: totalCostAmount}});
         } else {
           if (changeDue < 0) {
-            return ('You still owe ' + Math.abs(changeDue) );
+            var msg = 'You still owe ' + Math.abs(changeDue);
+           return res.json({status: "fail", message: msg, data: {paidAmount: paidAmount, totalCostAmount: totalCostAmount}});
           }
         }
         res.status(201).json({});
@@ -72,7 +74,7 @@ console.log("CHANGE", changeDue);
 //GET /api/vendor/purchases - get a list of all purchases with their item and date/time
 app.get("/api/vendor/purchases", function(req, res){
   Vendors.find({}).then(function(purchased) {
-  res.json(purchased);
+  res.json({status: "success", data: purchased});
 });
 });
 
@@ -84,7 +86,7 @@ app.get("/api/vendor/money", function(req, res){
     for (var i = 0; i<totalInVending.length; i++){
       total += totalInVending[i].totalCost;
     }
-  res.json(total);
+  res.json({status: "success", data: total});
 });
 });
 
