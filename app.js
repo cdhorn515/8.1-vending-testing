@@ -30,18 +30,45 @@ app.get("/api/customer/items", function(req, res){
 
 //POST /api/customer/items/:itemId/purchases - purchase an item using money
 app.post("/api/customer/items/snickers/purchases", function(req,res) {
-    // const newVendor = new Vendor(req.body).save().then(function () {
-     res.json({});
+  //update number of items in machine
+  var itemsLeft = models.Customers.quantity - req.body.numberPurchased;
+
+  var totalCostAmount = req.bosy.numberPurchased * models.Vendor.totalCost;
+  Customers.update({_id: "snickers"}, {$set: {quantity: itemsLeft}}).then(function(){
+    const vendor = new Vendor({type: 'snickers', quantity: numberPurchased, totalCost: totalCostAmount}).save().then(function(){
+    });
+    res.status(201).json();
+  });
+  //add money to vendor collection
+    // const newVendor = new Vendor(snickers).save().then(function () {
    });
 
 
 //GET /api/vendor/purchases - get a list of all purchases with their item and date/time
-// app.get("/api/vendor/purchases", function(req, res){
-//   Vendor.find({}).then(function(purchased) {
-//   res.json(purchased);
-// });
-// });
+app.get("/api/vendor/purchases", function(req, res){
+  Vendors.find({}).then(function(purchased) {
+  res.json(purchased);
+});
+});
 
+//GET /api/vendor/money - get a total amount of money accepted by the machine
+
+app.get("/api/vendor/money", function(req, res){
+  Vendors.find({}).then(function(totalInVending) {
+    var total = 0;
+    for (var i = 0; i<totalInVending.length; i++){
+      total += totalInVending[i].totalCost;
+    }
+  res.json(total);
+});
+});
+
+//PUT /api/vendor/items/:itemId - update item quantity, description, and cost
+app.patch('/api/vendor/items/:itemId', function(req, res){
+  Customers.update({type: "snickers"}, {$set: {price: 65}}).then(function(item){
+    res.status(200).json({});
+});
+});
 
 app.listen(3000, function (req, res){
   console.log("success");

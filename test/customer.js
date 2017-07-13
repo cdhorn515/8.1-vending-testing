@@ -51,9 +51,10 @@ describe('basic model tests', function() {
   it('test should clean up after itself', function(done) {
     const customers = new Customers().save().then(function(newCustomer) {
       Customers.count().then(function(count){
-        expect(count).to.equal(1);
-        done();
-      });
+        expect(count).to.equal(4);
+      })
+      .then(done());
+
     });
   });
 
@@ -63,8 +64,9 @@ describe('basic model tests', function() {
       expect(newCustomers.type).to.equal('snickers');
       expect(newCustomers.quantity).to.equal(10);
       expect(newCustomers.price).to.equal(65);
+          done();
     });
-      done();
+
   });
 });
 // end of model tests
@@ -78,8 +80,8 @@ describe(' buying items', function(){
   //A  can choose items from the vending machine
   it(' can choose an item from the vending machine', function(done){
     request(app)
-    .post('/api/items/snickers/purchases')
-    .expect(200)
+    .post('/api/customer/items/snickers/purchases')
+    .expect(201)
     .end(done);
     // const vendors = new Vendors({type: "m&ms", quantity: 3, price: 65})
     // .save().then(function(newVendors) {
