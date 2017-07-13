@@ -64,8 +64,8 @@ describe('basic model tests', function() {
       expect(newCustomers.type).to.equal('snickers');
       expect(newCustomers.quantity).to.equal(10);
       expect(newCustomers.price).to.equal(65);
-          done();
-    });
+
+    }).then(done());
 
   });
 });
@@ -74,6 +74,18 @@ describe('basic model tests', function() {
 describe(' buying items', function(){
 
   beforeEach(function(done) {
+    Customers.insertMany([
+      {type: "snickers", quantity: 10, price: 65},
+      {type: "reeses peanut butter cups", quantity: 8, price: 65},
+      {type: "m&ms", quantity: 6, price: 65}
+    ]).then(done());
+  });
+
+  afterEach(function(done) {
+    Customers.deleteMany({}).then(done());
+  });
+
+  afterEach(function(done) {
     Vendors.deleteMany({}).then(done());
   });
 
@@ -81,23 +93,37 @@ describe(' buying items', function(){
   it(' can choose an item from the vending machine', function(done){
     request(app)
     .post('/api/customer/items/snickers/purchases')
+    .send()
     .expect(201)
-    .end(done);
-    // const vendors = new Vendors({type: "m&ms", quantity: 3, price: 65})
-    // .save().then(function(newVendors) {
-    //   expect(newVendors.type).to.equal('m&ms');
-    //
-    // }).then(done());
+    .expect(function (res) {
+      Vendors.count().then(function(count){
+        expect(count).to.equal(4);
+    });
+  }).then(done());
   });
+
+  it('can calculate correct change from payment input', function(done){
+    request(app)
+      .post('/api/customer/items/snickers/purchses')
+      .send()
+      .expect(201)
+      .expect(function(){
+        expect(1).to.equal(100);
+
+      });
+      done();
+  });
+
+
+it('can tell customer when there are no items in vending machine', function(done) {
+  request(app)
+  .post('/api/customer/items/snickers/purchases')
+  .send()
+  .expect(404)
+  .then(done());
+});
 });
 // end of buying items
-
-//A  should be able to buy an item using money
-
-//A  should be able to buy an item, paying more than the item is worth (imagine putting a dollar in a machine for a 65-cent item) and get correct change. This change is just an amount, not the actual coins.
-
-//A  should not be able to buy items that are not in the machine, but instead get an error
-
 
 describe('basic api endpoint tests', function() {
   it('can access api endpoint and get success back', function(done) {

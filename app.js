@@ -30,15 +30,40 @@ app.get("/api/customer/items", function(req, res){
 
 //POST /api/customer/items/:itemId/purchases - purchase an item using money
 app.post("/api/customer/items/snickers/purchases", function(req,res) {
-  //update number of items in machine
-  var itemsLeft = models.Customers.quantity - req.body.numberPurchased;
-
-  var totalCostAmount = req.bosy.numberPurchased * models.Vendor.totalCost;
-  Customers.update({_id: "snickers"}, {$set: {quantity: itemsLeft}}).then(function(){
-    const vendor = new Vendor({type: 'snickers', quantity: numberPurchased, totalCost: totalCostAmount}).save().then(function(){
+  //numberPurchased comes from an input
+  var numberPurchased = 2;
+  var msg = '';
+  Customers.findOne({type: 'snickers'}).then(function(item){
+    if (!item){
+      msg = 'we do not carry that item';
+      return res.status(404).json({});
+    } else {
+    console.log('HERE',item);
+    var totalCostAmount = numberPurchased * item.price;
+    console.log("TOTALCOST ", totalCostAmount);
+    var paidAmount = 200;
+    var changeDue = paidAmount - totalCostAmount;
+console.log("CHANGE", changeDue);
+    item.quantity -= numberPurchased;
+    item.save().then(function(newItem){
+      const vendor = new Vendors({type: newItem.type, quantity: numberPurchased, totalCost: totalCostAmount}).save().then(function(){
+        //function on customer input of money
+        if (changeDue > 0) {
+          return ('Your change is ' + changeDue);
+        } else {
+          if (changeDue < 0) {
+            return ('You still owe ' + Math.abs(changeDue) );
+          }
+        }
+        res.status(201).json({});
+      });
     });
-    res.status(201).json();
+    }
   });
+
+  // Customers.update({type: "snickers"}, {$set: {quantity: itemsLeft}}).then(function(){
+  //   const vendor = new Vendors({type: 'snickers', quantity: numberPurchased, totalCost: totalCostAmount}).save().then(function(){
+  //   });
   //add money to vendor collection
     // const newVendor = new Vendor(snickers).save().then(function () {
    });
